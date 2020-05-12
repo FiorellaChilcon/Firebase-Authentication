@@ -7,49 +7,49 @@ document.addEventListener('DOMContentLoaded', function () {
   M.Collapsible.init(items);
 
 });
-// USER STATUS
-auth.onAuthStateChanged((user) => {
-  if (user) {   
-  console.log(`user logged in: ${user}`);
+const guideList = document.querySelector('.guides');
+const loggedOutLinks = document.querySelectorAll('.logged-out');
+const loggedInLinks = document.querySelectorAll('.logged-in');
+const accountDetails = document.querySelector('.account-details');
+const setUpUi = (user) => {
+  if (user) {
+    db.collection('users').doc(user.uid).get().then((doc) => {
+      const html = `Logged in as ${user.email} <br>
+      ${doc.data().bio}`;
+      accountDetails.innerHTML = html;
+    })
+    // toggle ui elements
+    loggedInLinks.forEach((item) => {
+      item.style.display = 'block';
+    });
+    loggedOutLinks.forEach((item) => {
+      item.style.display = 'none';
+    });
   } else {
-    console.log('user logged out');
+    accountDetails.innerHTML = '';
+    loggedInLinks.forEach((item) => {
+      item.style.display = 'none';
+    });
+    loggedOutLinks.forEach((item) => {
+      item.style.display = 'block';
+    });
   }
-})
-// SIGN UP
-const signupForm = document.querySelector('#signup-form');
-signupForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const email = signupForm['signup-email'].value;
-  const password = signupForm['signup-password'].value;
-  // create user/ async function wich generates a credential token
-  auth.createUserWithEmailAndPassword(email, password).then((cred) => {
-    console.log(cred.user);
-    // Close sign up modal and reset
-    const modal = document.querySelector('#modal-signup');
-    M.Modal.getInstance(modal).close();
-    signupForm.reset();
-  });
-});
-// LOG OUT
-const logout = document.querySelector('#logout');
-logout.addEventListener('click', (e) => {
-  e.preventDefault();
-  auth.signOut();
-  // .then(() => {
-  //   console.log('user signed out');
-  // });
-});
-// SIGN IN
-const loginForm = document.querySelector('#login-form');
-loginForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const email = loginForm['login-email'].value;
-  const password = loginForm['login-password'].value;
-  auth.signInWithEmailAndPassword(email, password).then((cred) => {
-    //  console.log(cred.user); status
-    // Close login modal and reset
-    const modal = document.querySelector('#modal-login');
-    M.Modal.getInstance(modal).close();
-    loginForm.reset();
-  });
-});
+};
+// SET UP GUIDES
+const setUpGuides = (data) => {
+  if (data.length) {
+    let html = '';
+    data.forEach(doc => {
+      const guide = doc.data();
+      const li = `
+            <li>
+                <div class="collapsible-header">${guide.tittle}</div>
+                <div class="collapsible-body"><span>${guide.content}</span></div>
+            </li>`;
+      html += li;
+    });
+    guideList.innerHTML = html;
+  } else {
+    guideList.innerHTML = `<h5>Log In to view Guides!</h5>`;
+  }
+};
