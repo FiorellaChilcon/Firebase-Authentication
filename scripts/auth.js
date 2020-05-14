@@ -1,12 +1,25 @@
-
+// ADD ADMIN CLOUD FUNCTIONS
+const addAdminRole = functions.httpsCallable('addAdminRole');
+const adminForm = document.querySelector('.admin-actions');
+adminForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const adminEmail = adminForm['admin-email'].value;
+    console.log(adminEmail);
+    addAdminRole({ email: adminEmail }).then((result) => {
+        console.log(result);
+    });
+});
 // USER STATUS
 auth.onAuthStateChanged((user) => {
     if (user) {
+        user.getIdTokenResult().then((idTokenResult) => {
+            user.admin = idTokenResult.claims.admin;
+            setUpUi(user);
+        });
         // FIRESTORE GET DATA 
         db.collection('guides').onSnapshot((snapshot) => {
             // passing an array of documents
             setUpGuides(snapshot.docs);
-            setUpUi(user);
         }, (err) => {
             console.log(err.message);
         });
@@ -48,6 +61,9 @@ signupForm.addEventListener('submit', (e) => {
         const modal = document.querySelector('#modal-signup');
         M.Modal.getInstance(modal).close();
         signupForm.reset();
+        signupForm.querySelector('.error').innerHTML = '';
+    }).catch((err) => {
+        signupForm.querySelector('.error').innerHTML = err.message;
     });
 });
 // LOG OUT
@@ -71,5 +87,8 @@ loginForm.addEventListener('submit', (e) => {
         const modal = document.querySelector('#modal-login');
         M.Modal.getInstance(modal).close();
         loginForm.reset();
-    });
+        loginForm.querySelector('.error').innerHTML = '';
+    }).catch((err) => {
+        loginForm.querySelector('.error').innerHTML = err.message;
+    });;
 });

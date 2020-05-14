@@ -11,11 +11,17 @@ const guideList = document.querySelector('.guides');
 const loggedOutLinks = document.querySelectorAll('.logged-out');
 const loggedInLinks = document.querySelectorAll('.logged-in');
 const accountDetails = document.querySelector('.account-details');
+const adminItems = document.querySelectorAll('.admin');
 const setUpUi = (user) => {
   if (user) {
+    if (user.admin) {
+      adminItems.forEach((item) => {
+        item.style.display = 'block';
+      });
+    }
     db.collection('users').doc(user.uid).get().then((doc) => {
       const html = `Logged in as ${user.email} <br>
-      ${doc.data().bio}`;
+      ${doc.data()['bio']} <br> ${user.admin ? 'Admin' : ''}`;
       accountDetails.innerHTML = html;
     })
     // toggle ui elements
@@ -26,6 +32,9 @@ const setUpUi = (user) => {
       item.style.display = 'none';
     });
   } else {
+    adminItems.forEach((item) => {
+      item.style.display = 'none';
+    });
     accountDetails.innerHTML = '';
     loggedInLinks.forEach((item) => {
       item.style.display = 'none';
